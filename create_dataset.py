@@ -60,3 +60,6 @@ def create_split(filenames, destination, subreddit_name, create_file=True):
         temp['char_counts'] = char_counts
         temp.set_index('id')
         temp.to_csv(f'{destination}.csv', mode='a', header=False, index=False)
+
+
+
