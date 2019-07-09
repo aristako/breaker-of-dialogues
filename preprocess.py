@@ -13,12 +13,21 @@ def batch_process(filename, destination):
     cols = ['context', 'response']
     for chunk in tqdm(pd.read_csv(open(filename, 'r'), usecols=cols, chunksize=chunksize),
                       desc='Batches', total=batch_count):
+        original_length = chunk.shape[0]
+        chunk.dropna(inplace=True)
+        tqdm.write(f'Dropped NaNs. Kept {chunk.shape[0]*100/original_length:.2f}% of samples.')
+        chunk['context'] = chunk['context'].str.replace(' #_new_utterance_# ', '\t')
         chunk['joined'] = chunk['context'] + '\t' + chunk['response']
         samples = '\n'.join(list(chunk['joined'].astype(str)))
         with open(destination, 'a') as f:
             f.write(samples)
 
 
-filenames = [f'train_0{i}_of_04.csv' for i in range(1,5)]
-for batch in tqdm(filenames, desc='Files'):
-    batch_process(batch, 'starspace_train.txt')
+def main():
+    filenames = [f'../data/reddit/train_0{i}_of_04.csv' for i in range(1,5)]
+    for batch in tqdm(filenames, desc='Files'):
+        batch_process(batch, '../data/reddit/StarSpace/starspace_train.txt')
+
+
+if __name__ == '__main__':
+    main()
