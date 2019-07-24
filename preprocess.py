@@ -16,6 +16,7 @@ def batch_process(filename, destination):
         original_length = chunk.shape[0]
         chunk.dropna(inplace=True)
         tqdm.write(f'Dropped NaNs. Kept {chunk.shape[0]*100/original_length:.2f}% of samples.')
+        chunk['context'] = chunk['context'].str.replace('\n', ' ')
         chunk['context'] = chunk['context'].str.replace(' #_new_utterance_# ', '\t')
         chunk['joined'] = chunk['context'] + '\t' + chunk['response']
         samples = '\n'.join(list(chunk['joined'].astype(str)))
