@@ -70,3 +70,6 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
         with open(dest, 'a') as f:
             f.write('\n'.join([str(x) for x in db_probs.tolist()])+'\n')
 
+
+if __name__=='__main__':
+    start_inference()
