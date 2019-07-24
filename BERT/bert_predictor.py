@@ -6,7 +6,7 @@ import click
 from pytorch_transformers import BertConfig, BertTokenizer, BertForNextSentencePrediction
 from tqdm import tqdm
 
-from BERT.feature_extractor import *
+from feature_extractor import *
 
 
 class SampleType:
@@ -36,7 +36,7 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
 
     assert torch.cuda.is_available()==True, 'PyTorch not running on GPU! #sadpanda'
 
-    dialogue_type_dict = {'db': 'db_response_new', 'normal': 'response'}
+    dialogue_type_dict = {'DB': 'db_response_new', 'normal': 'response'}
 
     config = BertConfig.from_pretrained(bert_model)
     tokenizer = BertTokenizer.from_pretrained(bert_model)
@@ -47,6 +47,7 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
     df = pd.read_csv(data, usecols=['id'])
     df.dropna(inplace=True)
     row_count = df.shape[0]
+    del df
 
     chunk_count = math.ceil(row_count/batchsize)
 
@@ -54,10 +55,13 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
         pass
 
     cols = ['context', dialogue_type_dict[dialogue_type]]
-    for i, chunk in tqdm(enumerate(pd.read_csv(open(data, 'r'), usecols=cols, chunksize=batchsize)),
+    for chunk in tqdm(pd.read_csv(open(data, 'r'), usecols=cols, chunksize=batchsize),
                          desc='Batches', total=chunk_count):
 
         samples = get_batch(chunk, dialogue_type_dict[dialogue_type])
+
+        assert len(samples)==chunk.shape[0], 'Some samples went missing!'
+
         results = convert_examples_to_features(samples, 500, tokenizer)
         input_ids = torch.tensor([x.input_ids for x in results]).cuda()
         token_type_ids = torch.tensor([x.input_type_ids for x in results]).cuda()
@@ -68,6 +72,7 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
         db_probs = outputs[:, 1]
 
         with open(dest, 'a') as f:
+            tqdm.write(f'About to save {len(db_probs.tolist())} new items.')
             f.write('\n'.join([str(x) for x in db_probs.tolist()])+'\n')
 
 
