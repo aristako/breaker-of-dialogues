@@ -15,13 +15,13 @@ class SampleType:
     unique_id = 0
 
 
-def get_batch(df):
+def get_batch(df, response_type):
     samples = []
     for i, row in df.iterrows():
         temp_sample = SampleType()
         temp_sample.unique_id = i
         temp_sample.text_a = row.context
-        temp_sample.text_b = row.response
+        temp_sample.text_b = row[response_type]
         samples.append(temp_sample)
     return samples
 
@@ -57,7 +57,7 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
     for i, chunk in tqdm(enumerate(pd.read_csv(open(data, 'r'), usecols=cols, chunksize=batchsize)),
                          desc='Batches', total=chunk_count):
 
-        samples = get_batch(chunk)
+        samples = get_batch(chunk, dialogue_type_dict[dialogue_type])
         results = convert_examples_to_features(samples, 500, tokenizer)
         input_ids = torch.tensor([x.input_ids for x in results]).cuda()
         token_type_ids = torch.tensor([x.input_type_ids for x in results]).cuda()
@@ -68,5 +68,5 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
         db_probs = outputs[:, 1]
 
         with open(dest, 'a') as f:
-          f.write('\n'.join([str(x) for x in db_probs.tolist()])+'\n')
+            f.write('\n'.join([str(x) for x in db_probs.tolist()])+'\n')
 
