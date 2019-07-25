@@ -71,8 +71,6 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
         outputs = torch.softmax(outputs, dim=1)
         db_probs = outputs[:, 1]
 
-        print(db_probs.tolist())
-
         with open(dest, 'a') as f:
             f.write('\n'.join([str(x) for x in db_probs.tolist()])+'\n')
 
