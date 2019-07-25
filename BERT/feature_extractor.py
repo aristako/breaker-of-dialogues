@@ -35,8 +35,8 @@ def convert_examples_to_features(examples, seq_length, tokenizer):
     for (ex_index, example) in enumerate(examples):
         tokens_a = tokenizer.tokenize(example.text_a)
         tokens_b = tokenizer.tokenize(example.text_b)
-        complete_list = tokens_a + tokens_b
 
+        complete_list.append(tokens_a + tokens_b)
         tokens_a_list.append(tokens_a)
         tokens_b_list.append(tokens_b)
 
@@ -54,12 +54,11 @@ def convert_examples_to_features(examples, seq_length, tokenizer):
         tokens.append("[SEP]")
         input_type_ids.append(0)
 
-        if tokens_b:
-            for token in tokens_b:
-                tokens.append(token)
-                input_type_ids.append(1)
-            tokens.append("[SEP]")
+        for token in tokens_b:
+            tokens.append(token)
             input_type_ids.append(1)
+        tokens.append("[SEP]")
+        input_type_ids.append(1)
 
         input_ids = tokenizer.convert_tokens_to_ids(tokens)
 
