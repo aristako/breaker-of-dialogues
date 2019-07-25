@@ -174,10 +174,10 @@ def convert_single_example_to_features(examples, tokenizer):
     for (ex_index, example) in enumerate(examples):
         tokens_a = tokenizer.tokenize(str(example.text_a))
         tokens_b = tokenizer.tokenize(str(example.text_b))
-        seq_length = len(tokens_a) + len(tokens_b) + 3
+        seq_length = min(len(tokens_a)+len(tokens_b)+3, 512)
 
         # 512 is dimensionality of input, minus 3 tokens
-        _truncate_seq_pair(tokens_a, tokens_b, 509)
+        _truncate_seq_pair(tokens_a, tokens_b, seq_length-3)
 
         tokens = []
         input_type_ids = []
