@@ -32,9 +32,10 @@ def get_batch(df, response_type):
 @click.option('--dest', default='validation_db.txt', help='Prediction filename.')
 @click.option('--batchsize', default=1, help='Batch prediction size.')
 @click.option('--bert_model', default='bert-base-uncased', help='Batch prediction size.')
-def start_inference(data, dialogue_type, dest, batchsize, bert_model):
+@click.option('--cuda', default=False, help='Use CUDA or nah fam.')
+def start_inference(data, dialogue_type, dest, batchsize, bert_model, cuda):
 
-    assert torch.cuda.is_available()==True, 'PyTorch not running on GPU! #sadpanda'
+    assert torch.cuda.is_available()!=True: print('PyTorch not running on GPU! #sadpanda')
 
     dialogue_type_dict = {'DB': 'db_response_new', 'normal': 'response'}
 
@@ -62,7 +63,11 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
 
         assert len(samples)==chunk.shape[0], 'Some samples went missing!'
 
-        results = convert_single_example_to_features(samples, tokenizer)
+        if batchsize==1:
+            results = convert_single_example_to_features(samples, tokenizer)
+        else:
+            results = convert_examples_to_features(samples, tokenizer)
+
         input_ids = torch.tensor([x.input_ids for x in results]).cuda()
         token_type_ids = torch.tensor([x.input_type_ids for x in results]).cuda()
         attention_mask = torch.tensor([x.input_mask for x in results]).cuda()

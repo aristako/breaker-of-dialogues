@@ -26,7 +26,7 @@ def _truncate_seq_pair(tokens_a, tokens_b, max_length):
             tokens_b.pop()
 
 
-def convert_examples_to_features(examples, seq_length, tokenizer):
+def convert_examples_to_features(examples, tokenizer):
     """Loads a data file into a list of `InputBatch`s."""
 
     tokens_a_list, tokens_b_list = [], []
@@ -176,6 +176,9 @@ def convert_single_example_to_features(examples, tokenizer):
         tokens_b = tokenizer.tokenize(str(example.text_b))
         seq_length = len(tokens_a) + len(tokens_b) + 3
 
+        # 512 is dimensionality of input, minus 3 tokens
+        _truncate_seq_pair(tokens_a, tokens_b, 509)
+
         tokens = []
         input_type_ids = []
         tokens.append("[CLS]")
@@ -186,12 +189,11 @@ def convert_single_example_to_features(examples, tokenizer):
         tokens.append("[SEP]")
         input_type_ids.append(0)
 
-        if tokens_b:
-            for token in tokens_b:
-                tokens.append(token)
-                input_type_ids.append(1)
-            tokens.append("[SEP]")
+        for token in tokens_b:
+            tokens.append(token)
             input_type_ids.append(1)
+        tokens.append("[SEP]")
+        input_type_ids.append(1)
 
         input_ids = tokenizer.convert_tokens_to_ids(tokens)
 
