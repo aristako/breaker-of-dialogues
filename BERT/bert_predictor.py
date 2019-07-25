@@ -34,14 +34,14 @@ def get_batch(df, response_type):
 @click.option('--bert_model', default='bert-base-uncased', help='Batch prediction size.')
 def start_inference(data, dialogue_type, dest, batchsize, bert_model):
 
-    #assert torch.cuda.is_available()==True, 'PyTorch not running on GPU! #sadpanda'
+    assert torch.cuda.is_available()==True, 'PyTorch not running on GPU! #sadpanda'
 
     dialogue_type_dict = {'DB': 'db_response_new', 'normal': 'response'}
 
     config = BertConfig.from_pretrained(bert_model)
     tokenizer = BertTokenizer.from_pretrained(bert_model)
     model = BertForNextSentencePrediction(config)
-    #model.cuda()
+    model.cuda()
     model.eval()
 
     df = pd.read_csv(data, usecols=['id'])
@@ -63,9 +63,9 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model):
         assert len(samples)==chunk.shape[0], 'Some samples went missing!'
 
         results = convert_examples_to_features(samples, 500, tokenizer)
-        input_ids = torch.tensor([x.input_ids for x in results])#.cuda()
-        token_type_ids = torch.tensor([x.input_type_ids for x in results])#.cuda()
-        attention_mask = torch.tensor([x.input_mask for x in results])#.cuda()
+        input_ids = torch.tensor([x.input_ids for x in results]).cuda()
+        token_type_ids = torch.tensor([x.input_type_ids for x in results]).cuda()
+        attention_mask = torch.tensor([x.input_mask for x in results]).cuda()
 
         outputs = model(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)[0]
         outputs = torch.softmax(outputs, dim=1)
