@@ -35,7 +35,7 @@ def get_batch(df, response_type):
 @click.option('--cuda', default=False, help='Use CUDA or nah fam.')
 def start_inference(data, dialogue_type, dest, batchsize, bert_model, cuda):
 
-    assert torch.cuda.is_available()!=True, 'PyTorch not running on GPU! #sadpanda'
+    assert torch.cuda.is_available()==True, 'PyTorch not running on GPU! #sadpanda'
 
     dialogue_type_dict = {'DB': 'db_response_new', 'normal': 'response'}
 
@@ -56,28 +56,33 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model, cuda):
         pass
 
     cols = ['context', dialogue_type_dict[dialogue_type]]
-    for chunk in tqdm(pd.read_csv(open(data, 'r'), usecols=cols, chunksize=batchsize),
-                         desc='Batches', total=chunk_count):
+    for i, chunk in enumerate(tqdm(pd.read_csv(open(data, 'r'), usecols=cols, chunksize=batchsize),
+                                   desc='Batches', total=chunk_count)):
+        try:
+            samples = get_batch(chunk, dialogue_type_dict[dialogue_type])
 
-        samples = get_batch(chunk, dialogue_type_dict[dialogue_type])
+            assert len(samples)==chunk.shape[0], 'Some samples went missing!'
 
-        assert len(samples)==chunk.shape[0], 'Some samples went missing!'
+            if batchsize==1:
+                results = convert_single_example_to_features(samples, tokenizer)
+            else:
+                results = convert_examples_to_features(samples, tokenizer)
 
-        if batchsize==1:
-            results = convert_single_example_to_features(samples, tokenizer)
-        else:
-            results = convert_examples_to_features(samples, tokenizer)
+            input_ids = torch.tensor([x.input_ids for x in results]).cuda()
+            token_type_ids = torch.tensor([x.input_type_ids for x in results]).cuda()
+            attention_mask = torch.tensor([x.input_mask for x in results]).cuda()
 
-        input_ids = torch.tensor([x.input_ids for x in results]).cuda()
-        token_type_ids = torch.tensor([x.input_type_ids for x in results]).cuda()
-        attention_mask = torch.tensor([x.input_mask for x in results]).cuda()
+            outputs = model(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)[0]
+            outputs = torch.softmax(outputs, dim=1)
+            db_probs = outputs[:, 1]
 
-        outputs = model(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)[0]
-        outputs = torch.softmax(outputs, dim=1)
-        db_probs = outputs[:, 1]
-
-        with open(dest, 'a') as f:
-            f.write('\n'.join([str(x) for x in db_probs.tolist()])+'\n')
+            with open(dest, 'a') as f:
+                f.write('\n'.join([str(x) for x in db_probs.tolist()])+'\n')
+        except:
+            tqdm.write('Problem with following text...')
+            tqdm.write(f'Context: {chunk.context}')
+            tqdm.write(f'{dialogue_type_dict[dialogue_type]}: {chunk[dialogue_type_dict[dialogue_type]]}')
+            chunk.to_csv(dest.split('.')[0]+f'error_row{i}.txt')
 
 
 if __name__=='__main__':
