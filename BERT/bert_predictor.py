@@ -35,7 +35,7 @@ def get_batch(df, response_type):
 @click.option('--cuda', default=False, help='Use CUDA or nah fam.')
 def start_inference(data, dialogue_type, dest, batchsize, bert_model, cuda):
 
-    assert torch.cuda.is_available()!=True: print('PyTorch not running on GPU! #sadpanda')
+    assert torch.cuda.is_available()!=True, 'PyTorch not running on GPU! #sadpanda'
 
     dialogue_type_dict = {'DB': 'db_response_new', 'normal': 'response'}
 
