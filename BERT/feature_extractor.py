@@ -172,8 +172,8 @@ def convert_single_example_to_features(examples, tokenizer):
 
     features = []
     for (ex_index, example) in enumerate(examples):
-        tokens_a = tokenizer.tokenize(example.text_a)
-        tokens_b = tokenizer.tokenize(example.text_b)
+        tokens_a = tokenizer.tokenize(str(example.text_a))
+        tokens_b = tokenizer.tokenize(str(example.text_b))
         seq_length = len(tokens_a) + len(tokens_b) + 3
 
         tokens = []
