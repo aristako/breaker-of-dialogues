@@ -39,7 +39,7 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model, cuda):
 
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    torch.manual_seed(0)
+    torch.manual_seed(100)
 
     dialogue_type_dict = {'DB': 'db_response_new', 'normal': 'response'}
 
