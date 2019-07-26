@@ -40,11 +40,12 @@ def convert_examples_to_features(examples, tokenizer):
         tokens_a_list.append(tokens_a)
         tokens_b_list.append(tokens_b)
 
-    seq_length = len(max(complete_list, key=len))+3
+    seq_length = min(len(max(complete_list, key=len))+3, 512)
     del complete_list
 
     for tokens_a, tokens_b in zip(tokens_a_list, tokens_b_list):
         tokens = []
+        _truncate_seq_pair(tokens_a, tokens_b, seq_length - 3)
         input_type_ids = []
         tokens.append("[CLS]")
         input_type_ids.append(0)
