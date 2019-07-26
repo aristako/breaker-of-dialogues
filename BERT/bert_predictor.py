@@ -37,6 +37,10 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model, cuda):
 
     assert torch.cuda.is_available()==True, 'PyTorch not running on GPU! #sadpanda'
 
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.manual_seed(0)
+
     dialogue_type_dict = {'DB': 'db_response_new', 'normal': 'response'}
 
     config = BertConfig.from_pretrained(bert_model)
@@ -67,13 +71,13 @@ def start_inference(data, dialogue_type, dest, batchsize, bert_model, cuda):
         else:
             results = convert_examples_to_features(samples, tokenizer)
 
-        input_ids = torch.tensor([x.input_ids for x in results]).cuda()
-        token_type_ids = torch.tensor([x.input_type_ids for x in results]).cuda()
-        attention_mask = torch.tensor([x.input_mask for x in results]).cuda()
+        with torch.no_grad():
+            input_ids = torch.tensor([x.input_ids for x in results]).cuda()
+            token_type_ids = torch.tensor([x.input_type_ids for x in results]).cuda()
+            attention_mask = torch.tensor([x.input_mask for x in results]).cuda()
 
-        outputs = model(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)[0]
-        outputs = torch.softmax(
-            outputs, dim=1)
+            outputs = model(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)[0]
+            outputs = torch.softmax(outputs, dim=1)
         db_probs = outputs[:, 1]
 
         with open(dest, 'a') as f:
