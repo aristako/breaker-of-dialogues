@@ -4,10 +4,12 @@
       <w>chunksize</w>
       <w>filenames</w>
       <w>preprocess</w>
+      <w>probs</w>
       <w>reddit</w>
       <w>starspace</w>
       <w>subreddit</w>
       <w>subreddits</w>
+      <w>tokenized</w>
     </words>
   </dictionary>
 </component>
