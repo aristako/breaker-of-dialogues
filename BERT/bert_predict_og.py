@@ -9,15 +9,16 @@ import pickle
 def bert_prediction(context, response, model, tokenizer):
     tokenized_context = tokenizer.tokenize('[CLS] ' + context + ' [SEP]')
     tokenized_response = tokenizer.tokenize(response + ' [SEP]')
-
+    segments_ids = [0] * len(tokenized_context) + [1] * len(tokenized_response)
     tokenized_text = tokenized_context + tokenized_response
+
     # if too long, drop leading tokens
     if len(tokenized_text) > 512:
-        tokenized_text = tokenized_text[-512:]
+        tokenized_text = ['CLS'] + tokenized_text[-511:]
+        segments_ids = segments_ids[:512]
 
     indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
 
-    segments_ids = [0] * len(tokenized_context) + [1] * len(tokenized_response)
     with torch.no_grad():
         tokens_tensor = torch.tensor([indexed_tokens]).cuda()
         segments_tensors = torch.tensor([segments_ids]).cuda()
