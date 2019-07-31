@@ -11,6 +11,10 @@ def bert_prediction(context, response, model, tokenizer):
     tokenized_response = tokenizer.tokenize(response + ' [SEP]')
 
     tokenized_text = tokenized_context + tokenized_response
+    # if too long, drop leading tokens
+    if len(tokenized_text) > 512:
+        tokenized_text = tokenized_text[-512:]
+
     indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
 
     segments_ids = [0] * len(tokenized_context) + [1] * len(tokenized_response)
