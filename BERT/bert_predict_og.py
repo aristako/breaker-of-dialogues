@@ -26,12 +26,13 @@ def bert_prediction(context, response, model, tokenizer):
 
 
 @click.command()
+@click.option('--bert_model', default='bert-base-uncased', help='Batch prediction size.')
 @click.option('--batch_count', default=-1, type=int, help='Which batch to process for hacky "multiprocessing".')
-def start_inference(batch_count):
+def start_inference(batch_count, bert_model):
     torch.manual_seed(10)
 
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    model = BertForNextSentencePrediction.from_pretrained('bert-base-uncased')
+    tokenizer = BertTokenizer.from_pretrained(bert_model)
+    model = BertForNextSentencePrediction.from_pretrained(bert_model)
     model.eval()
     model.cuda()
 
