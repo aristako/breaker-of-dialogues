@@ -34,9 +34,9 @@ def start_inference(batch_count, bert_model, data_type):
     torch.manual_seed(10)
 
     if data_type=='testing':
-        data_location = '..data/testing_db.csv'
+        data_location = '../data/testing_db.csv'
     else:
-        data_location = '..data/validation_db.csv'
+        data_location = '../data/validation_db.csv'
 
     tokenizer = BertTokenizer.from_pretrained(bert_model)
     model = BertForNextSentencePrediction.from_pretrained(bert_model)
