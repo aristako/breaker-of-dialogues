@@ -48,7 +48,7 @@ def start_inference(batch_count, bert_model, data_type):
         df = pd.read_csv(data_location, skiprows=range(1, batch_count * batch_size + 1), nrows=batch_size)
         print(f'About to process batch number {batch_count}, which contains {df.shape[0]} samples.')
     else:
-        df = pd.read_csv(data_location, skiprows=range(1, 618450))
+        df = pd.read_csv(data_location)
 
     normal_probs_single, db_probs_single = [], []
     for _, row in tqdm(df.iterrows(), total=df.shape[0]):
