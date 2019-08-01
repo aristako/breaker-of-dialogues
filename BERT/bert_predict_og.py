@@ -14,7 +14,7 @@ def bert_prediction(context, response, model, tokenizer):
 
     # if too long, drop leading tokens
     if len(tokenized_text) > 512:
-        tokenized_text = ['CLS'] + tokenized_text[-511:]
+        tokenized_text = tokenized_text[0] + tokenized_text[-511:]
         segments_ids = segments_ids[-512:]
 
     indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
@@ -48,7 +48,7 @@ def start_inference(batch_count, bert_model, data_type):
         df = pd.read_csv(data_location, skiprows=range(1, batch_count * batch_size + 1), nrows=batch_size)
         print(f'About to process batch number {batch_count}, which contains {df.shape[0]} samples.')
     else:
-        df = pd.read_csv(data_location)
+        df = pd.read_csv(data_location, skiprows=618450)
 
     normal_probs_single, db_probs_single = [], []
     for _, row in tqdm(df.iterrows(), total=df.shape[0]):
